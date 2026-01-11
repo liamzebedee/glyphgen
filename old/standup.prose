@@ -1,0 +1,58 @@
+let topic = session "pick a topic from mid 20's life"
+
+parallel:
+  a1 = session: 
+    prompt: "what goes wrong here normally?"
+    context: {topic}
+    model: sonnet
+
+  a2 = session: 
+    prompt: "what happens that people never expect?"
+    context: {topic}
+
+  a3 = session: 
+    prompt: "what do people love about this? stuff they'd go mad for"
+    context: {topic}
+
+let b1 = session:
+  prompt: "generate a story idea of 3 beats - because of this, that happened, because of that, this happened"
+  context: { topic, a1, a2, a3 }
+
+let b2 = session:
+  prompt: "get this story's expectations"
+  context: { b1 }
+
+let b3 = session:
+  prompt: "generate 3 violating expectations, within the context of this story"
+  context: { b1, b2 }
+
+let joke = session:
+  prompt: "incorporate the best expectation violation into the joke"
+  context: { b1, b3 }
+
+loop until **joke is funny** (max: 5):
+  parallel:
+    let jerry = session:
+      prompt: "you are jerry seinfeld. is this joke funny?"
+      context: {joke}
+      model: sonnet
+    let larry = session:
+      prompt: "you are larry david. is this joke funny?"
+      context: {joke} 
+      model: sonnet
+  
+  session "get consensus from jerry/larry if joke is funny or not"
+
+  if **not funny**:
+    parallel:
+      let jerry2 = session:
+        prompt: "you are jerry seinfeld. make one change to improve this joke"
+        context: {joke}
+        model: sonnet
+      let larry2 = session:
+        prompt: "you are larry david. make one change to improve this joke"
+        context: {joke}
+        model: sonnet 
+
+session "show the joke"
+  context: joke

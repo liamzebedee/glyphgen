@@ -1,0 +1,100 @@
+# Ralph Building Mode
+# Pick task → implement → test → commit
+# This is ONE iteration - outer bash loop restarts it
+
+# ─────────────────────────────────────────────────────────────────
+# ORIENT: Load context (same every iteration for determinism)
+# ─────────────────────────────────────────────────────────────────
+
+parallel:
+  specs = session: "Study specs/* - these are the requirements"
+  agents = session: "Read AGENTS.md - how to build/test this project"
+  patterns = session: "Study src/lib/* - existing utilities and patterns"
+
+let plan = session: "Read IMPLEMENTATION_PLAN.md - what's the current state?"
+
+# ─────────────────────────────────────────────────────────────────
+# SELECT: Choose the most important task
+# ─────────────────────────────────────────────────────────────────
+
+let task = session:
+  prompt: "Choose the single most important incomplete task from the plan."
+  context: {plan}
+
+# ─────────────────────────────────────────────────────────────────
+# INVESTIGATE: Don't assume - search first
+# ─────────────────────────────────────────────────────────────────
+
+let investigation = session:
+  prompt: """
+  Before implementing, search the codebase thoroughly.
+  Don't assume this isn't already implemented somewhere.
+  Look for: existing implementations, related code, patterns to follow.
+  """
+  context: {task, patterns}
+
+# ─────────────────────────────────────────────────────────────────
+# IMPLEMENT: Do the work
+# ─────────────────────────────────────────────────────────────────
+
+session:
+  prompt: """
+  Implement the task completely. No placeholders. No stubs.
+
+  Follow existing patterns in src/lib/.
+  If functionality is missing, add it per the specs.
+  Single source of truth - no adapters or migrations.
+  """
+  context: {task, investigation, specs, patterns}
+
+# ─────────────────────────────────────────────────────────────────
+# VALIDATE: Backpressure via tests
+# ─────────────────────────────────────────────────────────────────
+
+let validation = session:
+  prompt: """
+  Run validation per AGENTS.md:
+  - Tests for the code you changed
+  - Full test suite if relevant
+  - Typecheck
+  - Lint
+
+  If tests fail, fix them before proceeding.
+  If unrelated tests fail, fix those too.
+  """
+  context: {agents}
+
+# ─────────────────────────────────────────────────────────────────
+# UPDATE: Keep state current
+# ─────────────────────────────────────────────────────────────────
+
+parallel:
+  session:
+    prompt: """
+    Update IMPLEMENTATION_PLAN.md:
+    - Mark completed task as done [x]
+    - Note any discoveries or new bugs found
+    - Add new tasks if scope expanded
+    - Clean out old completed items if list is getting long
+    """
+    context: {task, validation}
+
+  session:
+    prompt: """
+    If you learned something operational (correct commands, gotchas):
+    Update AGENTS.md briefly. Keep it operational only - no status updates.
+    """
+    context: {agents, validation}
+
+# ─────────────────────────────────────────────────────────────────
+# COMMIT: Persist the work
+# ─────────────────────────────────────────────────────────────────
+
+session:
+  prompt: """
+  Commit the changes:
+  git add -A
+  git commit -m "descriptive message of what changed and why"
+
+  Capture the WHY in the commit message, not just the what.
+  """

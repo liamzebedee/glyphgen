@@ -1,0 +1,89 @@
+# Ralph Loop - OpenProse Implementation
+# Three Phases, Two Prompts, One Loop
+
+# ═══════════════════════════════════════════════════════════════════
+# PHASE 1: DEFINE REQUIREMENTS
+# Human + LLM conversation → specs/*.md
+# ═══════════════════════════════════════════════════════════════════
+
+let jtbd = session:
+  prompt: "Interview me to understand the Job to Be Done. Ask clarifying questions about the problem, users, and desired outcomes. Keep asking until you have a clear picture."
+
+let topics = session:
+  prompt: """
+  Break down this JTBD into distinct topics of concern.
+  Test: Can you describe each topic in one sentence WITHOUT 'and'?
+  List each topic that needs a spec.
+  """
+  context: {jtbd}
+
+# Generate specs for each topic (human approves which to create)
+session:
+  prompt: """
+  For each topic of concern, create a spec file at specs/[topic-slug].md
+  Include: purpose, acceptance criteria, edge cases.
+  Capture the WHY, not just the what.
+  """
+  context: {topics}
+
+# ═══════════════════════════════════════════════════════════════════
+# PHASE 2: PLANNING MODE
+# Gap analysis: specs/* vs src/* → IMPLEMENTATION_PLAN.md
+# ═══════════════════════════════════════════════════════════════════
+
+let plan = session:
+  prompt: """
+  PLANNING MODE - Generate implementation plan only. Do NOT implement.
+
+  0a. Study specs/* to learn application specifications.
+  0b. Study IMPLEMENTATION_PLAN.md if present (may be incorrect).
+  0c. Study src/lib/* for shared utilities & components.
+
+  1. Use parallel subagents to compare specs/* against src/*.
+     Search for: TODOs, placeholders, minimal implementations, skipped tests.
+     Don't assume not implemented - confirm with code search first.
+
+  2. Create/update IMPLEMENTATION_PLAN.md as prioritized bullet list.
+     Sort by importance. Mark items complete/incomplete.
+
+  IMPORTANT: Plan only. No implementation. No commits.
+  """
+
+session: "Save plan to IMPLEMENTATION_PLAN.md"
+
+# ═══════════════════════════════════════════════════════════════════
+# PHASE 3: BUILDING MODE (THE LOOP)
+# Pick task → implement → test → commit → repeat
+# ═══════════════════════════════════════════════════════════════════
+
+loop until **IMPLEMENTATION_PLAN.md has no remaining tasks** (max: 100):
+
+  session:
+    prompt: """
+    BUILDING MODE - One task per iteration.
+
+    0a. Study specs/* to learn requirements.
+    0b. Study IMPLEMENTATION_PLAN.md - choose the most important item.
+    0c. Study src/lib/* for existing patterns.
+
+    1. INVESTIGATE: Use parallel subagents to search codebase.
+       Don't assume not implemented - confirm first.
+
+    2. IMPLEMENT: Make the changes. Use existing patterns from src/lib.
+       Implement completely - no placeholders or stubs.
+
+    3. VALIDATE: Run tests, typecheck, lint (see AGENTS.md for commands).
+       All tests must pass before proceeding.
+
+    4. UPDATE: Mark task complete in IMPLEMENTATION_PLAN.md.
+       Note any discoveries or new bugs found.
+
+    5. COMMIT: git add -A && git commit with descriptive message.
+
+    GUARDRAILS:
+    - Single source of truth, no migrations/adapters
+    - If unrelated tests fail, fix them as part of this increment
+    - Capture the WHY in documentation
+    - Update AGENTS.md with operational learnings (keep brief)
+    - Clean completed items from IMPLEMENTATION_PLAN.md periodically
+    """

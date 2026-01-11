@@ -1,0 +1,75 @@
+# Ralph SLC Planning Mode
+# Activities → Story Map → Simple/Lovable/Complete Release
+# Use when you want coherent product releases, not just "features done"
+
+# ─────────────────────────────────────────────────────────────────
+# ORIENT: Understand audience and activities
+# ─────────────────────────────────────────────────────────────────
+
+parallel:
+  audience = session: "Read AUDIENCE_JTBD.md - who are we building for and why?"
+  specs = session: "Study specs/* - what activities are defined?"
+  code = session: "Study src/* - what's already implemented?"
+  plan = session: "Read IMPLEMENTATION_PLAN.md if exists"
+
+# ─────────────────────────────────────────────────────────────────
+# MAP: Sequence activities into user journey
+# ─────────────────────────────────────────────────────────────────
+
+let journey = session:
+  prompt: """
+  Sequence the activities in specs/* into a user journey map.
+
+  Consider:
+  - How do activities flow into each other?
+  - What dependencies exist?
+  - What capability depths exist for each? (basic → enhanced)
+
+  Format as journey backbone:
+  ACTIVITY_1 → ACTIVITY_2 → ACTIVITY_3 → ACTIVITY_4
+  """
+  context: {audience, specs}
+
+# ─────────────────────────────────────────────────────────────────
+# SLICE: Determine next SLC release
+# ─────────────────────────────────────────────────────────────────
+
+let slice = session:
+  prompt: """
+  Given what's implemented, recommend the next SLC release.
+
+  SLC = Simple, Lovable, Complete:
+  - Simple: Narrow scope you can ship fast
+  - Lovable: People actually want to use it
+  - Complete: Fully accomplishes a job (not a broken preview)
+
+  Prefer THIN HORIZONTAL SLICES:
+  - Cover the journey end-to-end
+  - At minimal capability depth
+  - That still delivers real value
+
+  Which activities, at what depths, form the most valuable next release?
+  """
+  context: {journey, code, audience}
+
+# ─────────────────────────────────────────────────────────────────
+# PLAN: Create implementation plan for the slice
+# ─────────────────────────────────────────────────────────────────
+
+session:
+  prompt: """
+  Create IMPLEMENTATION_PLAN.md for this SLC release only.
+
+  Begin with:
+  ## Release: [Name]
+  **Scope:** [Which activities at what depths]
+  **Value:** [Why this is SLC - simple, lovable, complete]
+
+  Then prioritized task list:
+  - [ ] Task (scoped to this release)
+
+  Note out-of-scope items as "Future Work" at bottom.
+
+  IMPORTANT: Plan only. No implementation.
+  """
+  context: {slice, specs, plan}

@@ -1,0 +1,43 @@
+# Ralph Planning Mode
+# Gap analysis: specs/* vs src/* → IMPLEMENTATION_PLAN.md
+# Run this when: no plan exists, or plan is stale/wrong
+
+parallel:
+  specs = session:
+    prompt: "Study all files in specs/* and summarize the requirements."
+
+  code = session:
+    prompt: "Study src/* and src/lib/* - what's implemented? Look for patterns."
+
+  existing_plan = session:
+    prompt: "Read IMPLEMENTATION_PLAN.md if it exists. What's done? What's pending?"
+
+let gaps = session:
+  prompt: """
+  Compare specs against current code state.
+
+  Search for:
+  - Features in specs not yet implemented
+  - TODOs and FIXMEs in code
+  - Placeholder/stub implementations
+  - Skipped or flaky tests
+  - Inconsistent patterns
+
+  Don't assume not implemented - search to confirm.
+  """
+  context: {specs, code}
+
+session:
+  prompt: """
+  Create/update IMPLEMENTATION_PLAN.md as a prioritized bullet list.
+
+  Format:
+  - [ ] Task description (priority: high/medium/low)
+  - [x] Completed task
+
+  Sort by priority. Group related tasks.
+  Include discoveries and technical debt found.
+
+  IMPORTANT: Plan only. Do NOT implement anything.
+  """
+  context: {gaps, existing_plan}
