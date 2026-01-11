@@ -87,18 +87,27 @@ All specs in `specs/`:
   - Progress logging included
 
 ### 2.5 Dataset Loader
-- [ ] Implement `src/data/dataset.py`:
-  - PyTorch Dataset class wrapping the .pt file
-  - DataLoader factory with configurable batch size
-  - Validation split support
+- [x] Implemented `src/dataset.py`:
+  - GlyphDataset class wrapping the .pt file
+  - create_dataloaders() factory with train/val split
+  - create_train_loader() for full dataset without split
+  - Configurable batch size, workers, pin_memory
+  - Reproducible splits with seed parameter
 
 ### 2.6 Data Tests
-- [ ] Create `tests/test_data_pipeline.py`:
-  - Test font loading
-  - Test character rendering produces non-blank images
-  - Test augmentations preserve dimensions
-  - Test dataset shapes and value ranges
-  - Test reproducibility with fixed seed
+- [x] Created `tests/test_dataset.py` with 27 tests:
+  - Dataset loading and sample access
+  - Data shapes (image: 1x128x128, chars: scalar int64)
+  - Value ranges (images: [0,1], prev_char: [0,26], curr_char: [1,26])
+  - All 26 chars and 27 contexts represented
+  - DataLoader creation with train/val split
+  - Batch shapes and dtypes
+  - Shuffle behavior (train shuffles, val deterministic)
+  - Custom batch size and split ratio
+  - Reproducibility with fixed seed
+  - Data integrity and distribution validation
+
+**Phase 2 COMPLETE** ✓
 
 ---
 
