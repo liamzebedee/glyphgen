@@ -1,0 +1,33 @@
+# glyphgen
+
+Design a generative font renderer. We have normal font renderers like freetype/harfbuff which can render glyphs from simple UTF codepoints. I want you to design a generative one, which uses a neural network to output the bitmap (render). to support interesting ligatures, the inputs will be the last 1 characters, plus the current one. 
+
+Functional requirements:
+- one neural network, written using vanilla pytorch, a single python file
+- you will generate the training dataset, by using a helper script to generate something that looks like MNIST but for a-z ascii characters purely from existing open sans font rendering in python.
+- one glyph render should take maximum 5ms.
+- the weights can be at most 20mB
+- the output is low-ish fidelity - think 128x128, black and white
+- you will output a demo script which renders a line of sample text (just something basic - "The revolution will not be televised") by rendering each glyph and concatenating into a single image
+- it is simple enough to train on my 3090
+- it is expressive enough to have interesting outputs
+
+Secondary version:
+- we will make this an online learning system, by using a Claude subagent to score randomly sampled glyphs on personality. Here's how it will work:
+    - we will maintain 3 sets of weights for the network. these are our "fonts". located inside `networks/[id]/`
+    - each font will have an id, which is a concatenation of their integer index (1-10) and a word or three for their personality - "fruity", "dumb", "aggressive sans" whihc is sluggified
+    - we will run the online learning system and organise it into runs:
+        - each run will be indexed from 0. it will be located in `networks/[id]/runs/`
+        - each run will output: 
+            - networks/[id]/runs/0_weights.* - the weights of the network at this run.
+            - networks/[id]/runs/0_sample.png - the inference on the demo sentence "The revolution will not be televised"
+            - networks/[id]/runs/0_eval_n_glyph-[x].png - a set of n=3 randomly chosen glyphs, rendered, which are then passed to the eval
+            - eval - the eval will ask a simple question to claude - "rate this font character's personality from 1-10 on the basis of $FONT_PERSONALITY" (ie. fruity)
+            - networks/[id]/runs/0_eval_n_glyph-[x]_feedback.txt - feedback is stored here
+        - each run will 'online learn' by retraining the network based on the feedback from claude. I don't know how- but it has to influence the training proportional to the feedback ratings.
+
+
+## Development.
+
+This is built entirely in a Ralph loop.
+
