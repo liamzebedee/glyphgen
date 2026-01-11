@@ -104,45 +104,37 @@ All specs in `specs/`:
 
 ## Phase 3: Core Neural Network (Depends on: Phase 1)
 
-### 3.1 Embedding Module
-- [ ] Implement `src/models/embeddings.py`:
+> Note: Per AGENTS.md single-file pattern, implemented as `src/glyphnet.py` instead of separate files in `src/models/`.
+
+### 3.1-3.4 GlyphNetwork Implementation
+- [x] Implemented `src/glyphnet.py` with:
   - PrevCharEmbedding: 27 tokens x 32 dims (token 0 = start)
   - CurrCharEmbedding: 27 tokens x 32 dims
   - Input validation for token ranges
-
-### 3.2 MLP Fusion Module
-- [ ] Implement `src/models/mlp.py`:
-  - Input: 128 dims (32 + 32 + 64 style_z)
-  - Hidden layers: [256, 512, 256]
-  - ReLU activations
-  - Optional residual connections
-  - Output: 512-dim feature vector
-
-### 3.3 Transposed Conv Decoder
-- [ ] Implement `src/models/decoder.py`:
-  - Linear projection: 512 -> 2048 (reshape to 8x8x32)
-  - TransposeConv2d stages: 8x8 -> 16x16 -> 32x32 -> 64x64 -> 128x128
+  - MLP fusion: 128 -> 256 -> 512 -> 256 -> 512
+  - Decoder projection: 512 -> 2048 (reshape to 8x8x32)
+  - TransposeConv decoder: 8x8 -> 128x128
   - Channel progression: 32 -> 64 -> 32 -> 16 -> 8 -> 1
-  - ReLU between stages, Sigmoid at output
-  - Output range [0, 1]
-
-### 3.4 GlyphNetwork Assembly
-- [ ] Implement `src/models/glyph_network.py`:
-  - Combine embeddings, MLP, decoder
-  - Forward signature: `forward(prev_char, curr_char, style_z) -> (B, 1, 128, 128)`
-  - Input validation with descriptive errors
-  - Parameter count verification (< 2.9M)
-  - Deterministic inference mode
+  - Sigmoid output in [0, 1]
+  - Parameter count: 1,555,777 (within 2.9M limit)
+  - Forward: `forward(prev_char, curr_char, style_z) -> (B, 1, 128, 128)`
 
 ### 3.5 Model Tests
-- [ ] Create `tests/test_glyph_network.py`:
-  - Test input/output shapes
-  - Test output bounds [0, 1]
-  - Test style variation produces different outputs
-  - Test character variation produces different outputs
-  - Test determinism with fixed seed
-  - Test parameter count < 2.9M
-  - Test batch processing consistency
+- [x] Created `tests/test_glyphnet.py` with 27 tests:
+  - Input/output shapes (single and batch)
+  - Output bounds [0, 1] including extreme styles
+  - Input validation (valid ranges, rejects invalid)
+  - Style variation produces different outputs
+  - Character variation produces different outputs
+  - All 26 characters produce distinct outputs
+  - prev_char affects output
+  - Determinism with fixed seed
+  - Batch equals individual processing
+  - Parameter count < 2.9M
+  - CPU inference < 100ms
+  - Edge cases (start token, repetition, not blank/saturated)
+
+**Phase 3 COMPLETE** ✓
 
 ---
 
