@@ -10,7 +10,7 @@
 - [x] **Utilities** - src/utils.py with device detection, checkpointing
 - [x] **Training data generated** - 14,040 samples saved to data/train_dataset.pt (877.7 MB)
 - [x] **Training pipeline** - src/train.py with loss functions, training loop, CLI
-- [ ] **No model weights** - Ready to train with `python src/train.py --epochs 100`
+- [x] **Model weights trained** - 100 epochs completed, best val loss 0.0294, saved to outputs/
 
 ## Specs Reference
 
