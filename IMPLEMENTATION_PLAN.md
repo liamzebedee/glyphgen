@@ -423,15 +423,22 @@ All specs in `specs/`:
 
 ## Phase 10: Readability Validation (Depends on: Phases 3, 5)
 
+> Note: Per AGENTS.md single-file pattern, implemented as `src/readability.py` instead of `src/evaluation/readability.py`.
+
 ### 10.1 Edge Detection Metrics
-- [ ] Implement `src/evaluation/readability.py`:
-  - Edge sharpness score via gradient magnitude
-  - Mean gradient threshold > 0.7
+- [x] Implemented `src/readability.py`:
+  - `compute_gradient_magnitude()` using Sobel filters
+  - `compute_edge_sharpness()` returning 0-1 normalized score
+  - `compute_edge_sharpness_batch()` for batch processing
+  - Mean gradient threshold > 0.7 (EDGE_SHARPNESS_THRESHOLD constant)
 
 ### 10.2 Glyph Metrics
-- [ ] Implement glyph measurement:
-  - X-height, cap-height, stroke width
-  - Comparison against Open Sans reference (within +/- 15%)
+- [x] Implemented glyph measurement in `src/readability.py`:
+  - `GlyphMetrics` dataclass: x_height, cap_height, stroke_width, descender_depth, ink_coverage
+  - `compute_glyph_metrics()` measures structural properties
+  - `compute_reference_deviation()` compares against Open Sans reference
+  - `OPEN_SANS_REFERENCE` with baseline metrics for 128x128 glyphs
+  - Threshold: ±15% variance (METRIC_VARIANCE_THRESHOLD constant)
 
 ### 10.3 Automated Recognition (Optional)
 - [ ] Implement OCR validation:
@@ -440,11 +447,20 @@ All specs in `specs/`:
   - Target: > 95% accuracy
 
 ### 10.4 Readability Tests
-- [ ] Create `tests/test_readability.py`:
-  - Test edge sharpness metric
-  - Test glyph metrics within tolerance
-  - Test no blank glyphs generated
-  - Test no saturated glyphs (all white)
+- [x] Created `tests/test_readability.py` with 54 tests:
+  - TestGradientMagnitude: shape, non-negative, zero for constant, edge detection
+  - TestEdgeSharpness: return type, range, low for smooth, high for edges, batch
+  - TestGlyphMetrics: dataclass, blank image, ink coverage, cap height, stroke width, serialization
+  - TestBlankSaturatedDetection: blank/saturated detection with thresholds
+  - TestReferenceDeviation: zero for matching, positive for different, calculation accuracy
+  - TestReadabilityResult: is_readable logic, serialization
+  - TestValidateGlyphReadability: single glyph validation, blank/saturated detection
+  - TestBatchValidation: batch processing, counts, ratios
+  - TestReadabilitySummary: empty list, statistics computation
+  - TestThresholdConstants: spec compliance (0.7 edge, 0.15 variance)
+  - TestOpenSansReference: reasonable reference values
+
+**Phase 10 COMPLETE** ✓ (10.3 OCR validation marked as optional, can be added later)
 
 ---
 
