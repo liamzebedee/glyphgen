@@ -311,10 +311,15 @@ All specs in `specs/`:
 ## Phase 8: Claude Feedback Integration (Depends on: Phases 4, 6)
 
 ### 8.1 Image Encoding
-- [ ] Implement `src/evaluation/image_encoding.py`:
-  - Convert glyph tensor to PNG bytes
-  - Base64 encode for API transmission
-  - Validate encoding fidelity
+- [x] Implemented `src/image_encoding.py` (single-file per AGENTS.md pattern):
+  - `tensor_to_pil()` - Convert glyph tensor (1, H, W) or (H, W) to PIL Image
+  - `pil_to_base64()` - Encode PIL Image to base64 string (PNG default)
+  - `tensor_to_base64()` - Direct tensor to base64 conversion
+  - `base64_to_pil()` and `base64_to_tensor()` - Decoding for validation
+  - `batch_to_base64()` - Batch encoding for multiple glyphs
+  - `validate_encoding_fidelity()` - Round-trip validation within quantization tolerance
+  - `get_media_type()` - MIME type mapping for API content type
+  - 49 tests in `tests/test_image_encoding.py`
 
 ### 8.2 Claude Vision API Client
 - [ ] Implement `src/evaluation/claude_feedback.py`:
