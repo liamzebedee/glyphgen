@@ -322,31 +322,49 @@ All specs in `specs/`:
   - 49 tests in `tests/test_image_encoding.py`
 
 ### 8.2 Claude Vision API Client
-- [ ] Implement `src/evaluation/claude_feedback.py`:
-  - Initialize Anthropic client with API key
-  - Send base64 image with personality rating prompt
-  - Parse 1-10 ratings from Claude response
-  - Handle API errors: timeout, rate limit, auth failure
-  - Retry logic with exponential backoff
+- [x] Implemented `src/feedback.py` (single-file per AGENTS.md pattern):
+  - `ClaudeFeedbackClient` class with Anthropic client initialization
+  - API key from environment variable (ANTHROPIC_API_KEY)
+  - `evaluate_glyph()` - Send base64 image with personality rating prompt
+  - `evaluate_batch()` - Batch evaluation with rate limit delay
+  - `_parse_response()` - Parse 1-10 ratings from Claude JSON response
+  - Error handling: timeout, rate limit (429), auth failure (401)
+  - Retry logic with exponential backoff (up to 2 retries per spec)
 
 ### 8.3 Feedback Prompt Engineering
-- [ ] Create prompts for personality dimensions:
-  - Fruity: "Rate how fruity this glyph is (1=minimal, 10=extremely). Consider curves, roundness, playful characteristics."
-  - Aggressive: "Rate aggression (1=minimal, 10=extreme). Consider sharp angles, boldness, tension."
-  - Additional dimensions as needed
+- [x] Implemented in `src/feedback.py`:
+  - `PERSONALITY_PROMPTS` dict with detailed prompts for:
+    - Fruity: curves, roundness, playful characteristics, organic flow
+    - Aggressive: sharp angles, boldness, tension, confrontational energy
+    - Dumb: irregularity, comic-like qualities, naive charm
+    - Elegant: refinement, balance, sophistication, graceful proportions
+  - `_build_prompt()` - Generates Claude prompt requesting JSON ratings
+  - Configurable dimensions per evaluation
 
 ### 8.4 Feedback Storage
-- [ ] Implement feedback persistence:
-  - Save to `networks/[id]/runs/N_eval_X_glyph-[char]_feedback.txt`
-  - JSON format with ratings, timestamp, model metadata
-  - Append without overwriting previous feedback
+- [x] Implemented in `src/feedback.py`:
+  - `FeedbackResult` dataclass for single glyph feedback
+  - `EvaluationRun` dataclass for complete evaluation run
+  - `save_feedback()` - Save to `networks/[id]/feedback/N_eval_X_glyph-[char]_feedback.txt`
+  - `save_evaluation_run()` - Save run summary as JSON
+  - `load_evaluation_run()` - Load saved run
+  - `list_evaluation_runs()` - List all runs for a font
+  - `compute_average_ratings()` - Aggregate ratings across runs
+  - Feedback persists in JSON format with ratings, timestamp, model metadata
 
 ### 8.5 Feedback Tests
-- [ ] Create `tests/test_feedback.py`:
-  - Test image encoding round-trip
-  - Test feedback file creation and format
-  - Mock Claude API for deterministic tests
-  - Test error handling for API failures
+- [x] Created `tests/test_feedback.py` with 43 tests:
+  - FeedbackResult/EvaluationRun serialization
+  - Response parsing (JSON, code blocks, surrounding text)
+  - Rating clamping and key normalization
+  - ClaudeFeedbackClient API mocking
+  - Retry logic and error handling (auth, rate limit, timeout)
+  - Glyph sampling (correct size, no duplicates, determinism)
+  - Feedback storage (save, load, list, next run number)
+  - Collect feedback end-to-end with mocked API
+  - Average rating computation
+
+**Phase 8 COMPLETE** ✓
 
 ---
 
