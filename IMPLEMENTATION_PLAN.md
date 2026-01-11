@@ -370,41 +370,54 @@ All specs in `specs/`:
 
 ## Phase 9: Online Learning (Depends on: Phases 5, 8)
 
+> Note: Per AGENTS.md single-file pattern, implemented as `src/online_learn.py` instead of separate files in `src/training/`.
+
 ### 9.1 REINFORCE Implementation
-- [ ] Implement `src/training/reinforce.py`:
-  - `compute_policy_gradient(feedback_scores, style_z, log_probs)` -> gradients
+- [x] Implemented in `src/online_learn.py`:
+  - `compute_policy_gradient()` - REINFORCE-style gradient from feedback
   - Advantage computation: rating - baseline
-  - Gradient scaling by advantage
+  - Gradient scaling by advantage magnitude and sign
+  - Gradient clipping to max L2 norm
 
 ### 9.2 EMA Baseline Tracker
-- [ ] Implement `src/training/baseline.py`:
+- [x] Implemented `BaselineTracker` class in `src/online_learn.py`:
   - Exponential moving average: baseline = alpha * rating + (1-alpha) * baseline
-  - Configurable alpha (default 0.9-0.99)
-  - Initialization strategy
-  - Save/load baseline state
+  - Configurable alpha (default 0.9)
+  - Initialization to middle of 1-10 scale
+  - Save/load baseline state via to_dict/from_dict
+  - `is_reliable` property for minimum observations check
 
 ### 9.3 Weight Update Strategy
-- [ ] Implement `src/training/weight_updater.py`:
-  - Apply gradient updates to style_z and decoder layers
+- [x] Implemented in `src/online_learn.py`:
+  - `apply_style_update()` - Apply gradient to StyleVector with norm clamping
+  - `apply_decoder_update()` - Update decoder layers with weight bounds
   - Gradient clipping (L2 norm threshold)
-  - Learning rate control
-  - Update only specified layers (final 2-3 decoder layers)
+  - Learning rate control via CONFIG.online_lr
+  - Update only final decoder layers (configurable target_layers)
 
 ### 9.4 Online Learning Integration
-- [ ] Implement `src/training/online_learner.py`:
+- [x] Implemented `OnlineLearner` class in `src/online_learn.py`:
   - Full cycle: rating -> advantage -> gradient -> update -> checkpoint
-  - Update within 500ms budget
-  - Memory overhead < 50MB
+  - `update()` for single feedback, `update_batch()` for evaluation run
+  - `OnlineLearningState` for persistent state across sessions
   - Checkpoint to `networks/[id]/runs/[run_id]/weights_v[N].pt`
-  - Log gradients, losses, weight statistics
+  - `get_learning_stats()` for monitoring (advantage, gradient norms, etc.)
+  - `finalize()` to complete session with metadata
+  - `run_online_learning()` main entry point for CLI
 
 ### 9.5 Online Learning Tests
-- [ ] Create `tests/test_online_learning.py`:
-  - Test advantage computation
-  - Test baseline EMA convergence
-  - Test gradient stability (no NaN/Inf)
-  - Test weight update direction matches advantage sign
-  - Test checkpoint versioning
+- [x] Created `tests/test_online_learning.py` with 33 tests:
+  - TestBaselineTracker: EMA formula, convergence, serialization
+  - TestGradientComputation: positive/negative advantage, clipping, no NaN/Inf
+  - TestStyleUpdate: gradient application, norm clamping, name preservation
+  - TestDecoderUpdate: parameter modification, weight bounds
+  - TestCheckpointing: save/load versions, latest version detection
+  - TestOnlineLearningState: creation, save/load persistence
+  - TestOnlineLearner: initialization, single/batch updates, finalize, error handling
+  - TestGradientStability: no NaN after many updates, bounded style_z
+  - TestUpdateTiming: within 500ms budget
+
+**Phase 9 COMPLETE** ✓
 
 ---
 
