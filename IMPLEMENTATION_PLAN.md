@@ -467,11 +467,12 @@ All specs in `specs/`:
 ## Phase 11: End-to-End Integration (Depends on: All Phases)
 
 ### 11.1 Generation Pipeline
-- [ ] Implement `src/generate.py`:
-  - Load trained model
-  - Generate glyphs for given character sequence
-  - Apply personality style_z
-  - Save output images
+- [x] Implemented `src/generate.py`:
+  - Load trained model via InferenceEngine
+  - Generate glyphs for given character sequence via generate_sequence()
+  - Apply personality style_z via StyleVector or raw tensor
+  - Save output images (individual and composite)
+  - Full CLI interface with argparse
 
 ### 11.2 Training + Online Learning Pipeline
 - [ ] Implement `src/run_training.py`:
@@ -481,10 +482,12 @@ All specs in `specs/`:
   - Run persistence
 
 ### 11.3 Demo Application
-- [ ] Implement `src/demo.py`:
+- [x] Implemented `src/demo.py`:
   - Generate "The Revolution Will Not Be Televised" with selected personality
-  - Display/save glyph sequence
-  - Interactive personality selection
+  - Display/save glyph sequence (individual and composite)
+  - Interactive personality selection via CLI
+  - Support for all personalities with comparison image
+  - Full CLI interface: `python -m src.demo --personality fruity`
 
 ### 11.4 Integration Tests
 - [ ] Create `tests/test_integration.py`:
