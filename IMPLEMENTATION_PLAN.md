@@ -9,7 +9,8 @@
 - [x] **Config system** - src/config.py with all hyperparameters
 - [x] **Utilities** - src/utils.py with device detection, checkpointing
 - [x] **Training data generated** - 14,040 samples saved to data/train_dataset.pt (877.7 MB)
-- [ ] **No model weights** - Must train from scratch
+- [x] **Training pipeline** - src/train.py with loss functions, training loop, CLI
+- [ ] **No model weights** - Ready to train with `python src/train.py --epochs 100`
 
 ## Specs Reference
 
@@ -193,36 +194,44 @@ All specs in `specs/`:
 
 ## Phase 5: Training Pipeline (Depends on: Phases 2, 3, 4)
 
+> Note: Per AGENTS.md single-file pattern, implemented as `src/train.py` instead of separate files.
+
 ### 5.1 Loss Functions
-- [ ] Implement `src/training/losses.py`:
-  - Reconstruction loss (MSE or BCE for pixel values)
-  - Edge-aware loss for sharp glyph boundaries
-  - Style diversity regularization (optional)
+- [x] Implemented in `src/train.py`:
+  - MSE reconstruction loss for pixel values
+  - Edge-aware loss using Sobel gradient magnitude
+  - Combined loss: `total = recon + edge_weight * edge`
 
 ### 5.2 Base Trainer
-- [ ] Implement `src/training/trainer.py`:
-  - Training loop with DataLoader
-  - Optimizer setup (AdamW recommended)
-  - Learning rate scheduling
-  - Checkpoint saving via persistence layer
-  - Logging of loss curves and metrics
-  - GPU/CPU device management
+- [x] Implemented in `src/train.py`:
+  - `train_one_epoch()` function with DataLoader iteration
+  - AdamW optimizer with configurable weight decay
+  - CosineAnnealingWarmRestarts scheduler with warmup
+  - Checkpoint saving (best, periodic, final)
+  - Loss logging per epoch (total, recon, edge)
+  - Device management via `get_device()`
 
 ### 5.3 Training Script
-- [ ] Create `src/train.py`:
-  - CLI interface for training
-  - Config loading
-  - Dataset initialization
-  - Model initialization
-  - Training execution
-  - Final checkpoint save
+- [x] Implemented `src/train.py`:
+  - CLI with argparse: `--epochs`, `--resume`, `--output-dir`
+  - Config loading from `src/config.py`
+  - Dataset initialization via `create_dataloaders()`
+  - Model initialization and parameter counting
+  - Training execution with validation
+  - Final checkpoint saved to `outputs/final_checkpoint.pt`
 
 ### 5.4 Training Tests
-- [ ] Create `tests/test_training.py`:
-  - Test loss computation
-  - Test single training step
-  - Test checkpoint save/resume
-  - Test training loop runs without error
+- [x] Created `tests/test_training.py` with 18 tests:
+  - Loss computation (MSE, combined, edge weight)
+  - Edge loss shape, positivity, gradient flow
+  - Single training step updates weights
+  - Validation step doesn't update weights
+  - Gradient stability (no NaN/Inf)
+  - Loss decreases over steps
+  - Checkpoint save/resume round-trip
+  - Full training loop runs for 1 epoch
+
+**Phase 5 COMPLETE** ✓
 
 ---
 
