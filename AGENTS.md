@@ -79,4 +79,5 @@ aoe/
 
 ## Operational Notes
 
-<!-- Add learnings here as you build -->
+- Install linting tools separately: `pip install mypy ruff`
+- Use `mypy src/ --ignore-missing-imports` (third-party stubs often missing)

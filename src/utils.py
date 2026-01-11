@@ -5,7 +5,6 @@ Shared utilities for Generative Font Renderer.
 import torch
 from pathlib import Path
 from typing import Optional
-import json
 from datetime import datetime
 
 

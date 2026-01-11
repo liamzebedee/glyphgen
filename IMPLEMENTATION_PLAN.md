@@ -8,7 +8,7 @@
 - [x] **Dependencies defined** - requirements.txt created
 - [x] **Config system** - src/config.py with all hyperparameters
 - [x] **Utilities** - src/utils.py with device detection, checkpointing
-- [ ] **No training data** - Must generate 14,040 samples from Open Sans
+- [x] **Training data generated** - 14,040 samples saved to data/train_dataset.pt (877.7 MB)
 - [ ] **No model weights** - Must train from scratch
 
 ## Specs Reference
@@ -56,21 +56,20 @@ All specs in `specs/`:
 
 ## Phase 2: Data Pipeline (Depends on: Phase 1)
 
+> Note: Tasks 2.1-2.4 were combined into a single `src/generate_dataset.py` file per the single-file module pattern in AGENTS.md.
+
 ### 2.1 Font Acquisition
-- [ ] Implement `src/data/font_loader.py`:
-  - Download or locate Open Sans font file (.ttf)
-  - Validate font file integrity
-  - Provide fallback mechanism if font unavailable
+- [x] Font downloaded to `fonts/OpenSans-Regular.ttf`
 
 ### 2.2 Character Rendering
-- [ ] Implement `src/data/renderer.py`:
+- [x] Implemented in `src/generate_dataset.py`:
   - Render single character to 128x128 grayscale PIL Image
   - Center character in canvas with consistent padding
   - Support all 26 lowercase letters (a-z)
   - Validate rendered characters are non-blank
 
 ### 2.3 Augmentation Pipeline
-- [ ] Implement `src/data/augmentations.py`:
+- [x] Implemented in `src/generate_dataset.py`:
   - Rotation: [-15, 15] degrees
   - Scale: [0.8, 1.2] factor
   - Translation: [-5, 5] pixels both axes
@@ -80,12 +79,12 @@ All specs in `specs/`:
   - Preserve 128x128 dimensions
 
 ### 2.4 Dataset Generation
-- [ ] Implement `src/data/dataset_generator.py`:
-  - Generate 14,040 samples (26 chars x 27 contexts x 20 augmentations)
-  - Create tensors: images (14040, 1, 128, 128), prev_chars (14040,), curr_chars (14040,)
-  - Save as single `.pt` file via torch.save()
-  - Include reproducibility with fixed seed
-  - Add progress logging
+- [x] Implemented as `src/generate_dataset.py`:
+  - Generated 14,040 samples (26 chars x 27 contexts x 20 augmentations)
+  - Created tensors: images (14040, 1, 128, 128), prev_chars (14040,), curr_chars (14040,)
+  - Saved to `data/train_dataset.pt` (877.7 MB)
+  - Reproducible with fixed seed
+  - Progress logging included
 
 ### 2.5 Dataset Loader
 - [ ] Implement `src/data/dataset.py`:
