@@ -237,25 +237,37 @@ All specs in `specs/`:
 
 ## Phase 6: Personality Expression (Depends on: Phase 5)
 
+> Note: Per AGENTS.md single-file pattern, implemented as `src/style.py` instead of `src/models/style.py`.
+
 ### 6.1 Style Latent Interface
-- [ ] Implement `src/models/style.py`:
-  - StyleVector class: 64-dim float tensor
-  - Random initialization
-  - Interpolation between styles
-  - L2 norm clamping for stability
-  - Save/load style vectors
+- [x] Implemented `src/style.py`:
+  - StyleVector dataclass: 64-dim float tensor with name
+  - Creation methods: zeros(), random(seed, std), from_tensor(), load()
+  - Interpolation: interpolate(other, t) for smooth transitions
+  - L2 norm operations: norm(), clamp_norm(max), normalize(target)
+  - Persistence: save(path), load(path) with multiple format support
+  - Utilities: to(device), clone(), perturb(std, seed)
+  - Helper functions: create_personality_vectors(), interpolate_personalities()
 
 ### 6.2 Personality Definitions
-- [ ] Create `configs/personalities.yaml`:
-  - Define personality names: fruity, aggressive, elegant, dumb, etc.
-  - Map to initial style_z seeds or learned vectors
+- [x] Personalities defined in `src/config.py`:
+  - CONFIG.personalities = ["fruity", "dumb", "aggressive-sans"]
+  - create_personality_vectors() generates seeded random vectors per personality
+  - No separate YAML needed - config.py is the single source of truth
 
 ### 6.3 Personality Tests
-- [ ] Create `tests/test_personality.py`:
-  - Test style_z dimensionality = 64
-  - Test interpolation produces smooth transitions
-  - Test zero vector produces valid output
-  - Test cross-glyph consistency with same style_z
+- [x] Created `tests/test_style.py` with 53 tests:
+  - StyleVector creation (zeros, random, from_tensor) with correct dimensions
+  - Validation rejects wrong dimensions, 2D tensors, 0D tensors
+  - Norm operations: calculation, clamping, normalization
+  - Interpolation: t=0/0.5/1.0, rejects invalid t, smooth transitions
+  - Persistence: save/load roundtrip, parent dir creation, legacy formats
+  - Operations: to(), clone(), perturb(), equality, repr
+  - create_personality_vectors(): creates unique, named, reproducible vectors
+  - interpolate_personalities(): correct steps, endpoints match
+  - Model integration: zero vector valid, deterministic, different styles differ
+
+**Phase 6 COMPLETE** ✓
 
 ---
 
