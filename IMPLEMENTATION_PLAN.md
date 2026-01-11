@@ -149,37 +149,45 @@ All specs in `specs/`:
 
 ## Phase 4: Persistence Layer (Depends on: Phase 3)
 
+> Note: Per AGENTS.md single-file pattern, implemented as `src/persistence.py` instead of `src/utils/persistence.py`.
+
 ### 4.1 Directory Management
-- [ ] Implement `src/utils/persistence.py`:
-  - Create `networks/[id]/runs/` directory structure
-  - Font ID validation: `{number}-{name}` pattern, lowercase only
-  - Unique run ID generation (ISO 8601 timestamps with microseconds)
-  - Directory discovery on startup
+- [x] Implemented `src/persistence.py`:
+  - Create `networks/[id]/runs/` directory structure via `ensure_font_dirs()`
+  - Font ID validation: `{number}-{name}` pattern, lowercase only via `validate_font_id()`
+  - Unique run ID generation (ISO 8601 timestamps with microseconds) via `generate_run_id()`
+  - Directory discovery on startup via `list_fonts()` and `list_runs()`
 
 ### 4.2 Weight Serialization
-- [ ] Implement weight save/load in `src/utils/persistence.py`:
-  - `save_model(font_id, weights, personality_vector, sample_image, eval_glyphs, feedback)`
-  - `load_model(font_id, run_id=None)` - defaults to latest run
-  - Version metadata in saved files
-  - Atomic saves (temp file + rename)
-  - Corruption detection on load
+- [x] Implemented weight save/load in `src/persistence.py`:
+  - `save_model(font_id, model, style_z, sample_image, eval_glyphs, feedback)` -> run_id
+  - `load_model(font_id, model, run_id=None)` - defaults to latest run, returns (style_z, metadata)
+  - Version metadata in saved files (`weights_version`, `feedback_schema`)
+  - Atomic saves via `_atomic_save()` (temp file + rename)
+  - Corruption detection on load with clear error messages
 
 ### 4.3 Run Management
-- [ ] Implement run tracking:
-  - `list_fonts()` -> List[str]
-  - `list_runs(font_id)` -> List[RunMetadata]
+- [x] Implemented run tracking:
+  - `list_fonts()` -> List[str] - sorted alphabetically
+  - `list_runs(font_id)` -> List[RunMetadata] - sorted chronologically
   - `get_run_info(font_id, run_id)` -> RunMetadata
-  - Chronological ordering of runs
-  - Handle incomplete runs gracefully
+  - `get_latest_run(font_id)` -> Optional[RunMetadata]
+  - Handle incomplete runs gracefully (missing metadata handled)
+  - Additional utilities: `load_feedback()`, `load_sample_image()`, `load_eval_glyphs()`, `export_style_z()`
 
 ### 4.4 Persistence Tests
-- [ ] Create `tests/test_persistence.py`:
-  - Test directory creation
-  - Test save/load round-trip numerical equivalence (6 decimal places)
-  - Test font ID validation
-  - Test run discovery
-  - Test corruption detection
-  - Test concurrent access safety
+- [x] Created `tests/test_persistence.py` with 42 tests:
+  - Font ID validation (valid/invalid patterns)
+  - Directory creation and structure
+  - Save/load round-trip numerical equivalence (6 decimal places)
+  - Run discovery and chronological ordering
+  - Corruption detection (corrupted weights, missing keys, corrupted metadata)
+  - Concurrent access safety (parallel saves to different fonts)
+  - File existence checks and deletion operations
+  - RunMetadata serialization/deserialization
+  - Style vector export
+
+**Phase 4 COMPLETE** ✓
 
 ---
 
